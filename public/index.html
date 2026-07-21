@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Course LMS — Video Hosting PoC</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header class="hero">
+      <h1>AI Course LMS <span class="muted">— video hosting shoot-out</span></h1>
+      <p class="muted">
+        Four players, one metrics HUD. Open each on your test devices and compare startup time,
+        rebuffering, and quality switching. Cards marked <span class="badge demo">demo</span> are
+        playing a public sample until you add credentials to <code>.env</code>.
+      </p>
+    </header>
+
+    <div class="grid" id="cards">
+      <a class="card" href="/player.html?p=stream" data-provider="stream">
+        <h2>Cloudflare Stream</h2>
+        <p>Fully managed: upload once, Stream encodes and serves HLS. Priced per minute stored + per minute delivered.</p>
+        <span class="badge" data-badge>checking…</span>
+      </a>
+      <a class="card" href="/player.html?p=mux" data-provider="mux">
+        <h2>MUX</h2>
+        <p>Fully managed: assets + playback IDs, best-in-class player and analytics. Priced per minute encoded/stored/streamed.</p>
+        <span class="badge" data-badge>checking…</span>
+      </a>
+      <a class="card" href="/player.html?p=s3" data-provider="s3">
+        <h2>S3 + CloudFront</h2>
+        <p>You upload an MP4 (or HLS), CloudFront serves it. Storage is cheap; you pay CloudFront egress per GB.</p>
+        <span class="badge" data-badge>checking…</span>
+      </a>
+      <a class="card" href="/player.html?p=r2" data-provider="r2">
+        <h2>R2 + own encoding</h2>
+        <p>You encode an HLS ladder with ffmpeg, upload to R2, serve from its public URL. Zero egress fees.</p>
+        <span class="badge" data-badge>checking…</span>
+      </a>
+      <a class="card" href="/player.html?p=youtube" data-provider="youtube">
+        <h2>YouTube embed <span class="muted">(benchmark)</span></h2>
+        <p>Free unlisted-video embed. Not viable for a paid course, but a useful quality/startup baseline to beat.</p>
+        <span class="badge" data-badge>checking…</span>
+      </a>
+    </div>
+
+    <footer class="muted small">
+      Tip: run the server, then open the <em>Network</em> URL printed in the terminal on your phone
+      (same wifi) to test mobile devices.
+    </footer>
+  </main>
+
+  <script>
+    fetch("/api/config").then(r => r.json()).then(cfg => {
+      document.querySelectorAll("[data-provider]").forEach(card => {
+        const conf = cfg[card.dataset.provider]?.configured;
+        const badge = card.querySelector("[data-badge]");
+        badge.textContent = conf ? "configured" : "demo";
+        badge.classList.add(conf ? "ok" : "demo");
+      });
+    });
+  </script>
+</body>
+</html>

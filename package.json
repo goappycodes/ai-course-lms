@@ -1,0 +1,20 @@
+{
+  "name": "ai-lms-video-poc",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Proof-of-concept LMS video player comparing Cloudflare Stream, MUX, S3+CloudFront, and R2+self-managed HLS",
+  "scripts": {
+    "start": "node server.js",
+    "encode": "node scripts/encode-hls.mjs",
+    "upload:stream": "node scripts/upload-stream.mjs",
+    "upload:mux": "node scripts/upload-mux.mjs",
+    "upload:s3": "node scripts/upload-s3.mjs",
+    "upload:r2": "node scripts/upload-r2.mjs"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

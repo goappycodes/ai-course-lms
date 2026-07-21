@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LMS Player PoC</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <a href="/">&larr; All players</a>
+      <h1 id="title">Loading…</h1>
+      <span class="badge" id="badge"></span>
+    </div>
+
+    <div class="player-wrap" id="playerWrap"></div>
+
+    <div class="controls">
+      <button id="reloadBtn" title="Reload the source and re-measure startup time">Reload &amp; re-measure</button>
+      <select id="qualitySelect" hidden></select>
+      <select id="throttleSelect" hidden title="Artificially limit segment download speed to simulate a slow connection"></select>
+      <button id="officialBtn" hidden>Switch to official player</button>
+    </div>
+
+    <div class="hud" id="hud"></div>
+
+    <div class="chart-wrap" id="chartWrap" hidden>
+      <div class="chart-legend">
+        <span><i class="dot dot-buffer"></i>Buffer ahead (s)</span>
+        <span><i class="dot dot-net"></i>Segment download speed (Mbps)</span>
+        <span><i class="dot dot-stall"></i>Rebuffering</span>
+      </div>
+      <canvas id="chart" height="120"></canvas>
+    </div>
+
+    <p class="src-line" id="srcLine"></p>
+    <p class="src-line" id="uaLine"></p>
+
+    <section class="info" id="info"></section>
+  </main>
+
+  <script type="module" src="/js/player.js"></script>
+</body>
+</html>
