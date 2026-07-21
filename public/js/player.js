@@ -132,7 +132,19 @@ function loadUnified() {
   // Nothing is fetched until the user presses play, so the HUD's startup time
   // is a real join-time measurement instead of a preload artifact.
   video.preload = "none";
+  if (cfg.poster) video.poster = cfg.poster;
   els.wrap.appendChild(video);
+
+  // Big play affordance over the poster; removed on first play (metrics still
+  // measure from the play event, so clicking this is measured identically).
+  const overlay = document.createElement("button");
+  overlay.className = "big-play";
+  overlay.setAttribute("aria-label", "Play");
+  overlay.innerHTML =
+    `<span class="big-play-circle"><svg viewBox="0 0 24 24" width="34" height="34"><path d="M8 5v14l11-7z" fill="currentColor"/></svg></span>`;
+  overlay.addEventListener("click", () => video.play());
+  els.wrap.appendChild(overlay);
+  video.addEventListener("play", () => overlay.remove(), { once: true });
 
   els.chartWrap.hidden = false;
   metrics = new Metrics(video, els.hud, chart);

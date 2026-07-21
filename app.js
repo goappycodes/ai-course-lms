@@ -94,6 +94,7 @@ app.get("/api/config", (_req, res) => {
     configured: streamConfigured,
     hlsUrl: `https://customer-${sc}.cloudflarestream.com/${su}/manifest/video.m3u8`,
     iframeUrl: `https://customer-${sc}.cloudflarestream.com/${su}/iframe`,
+    poster: `https://customer-${sc}.cloudflarestream.com/${su}/thumbnails/thumbnail.jpg?time=2s`,
   };
 
   // --- MUX ---
@@ -103,6 +104,7 @@ app.get("/api/config", (_req, res) => {
     configured: muxConfigured,
     playbackId: muxConfigured ? muxPlaybackId : DEMO.muxPlaybackId,
     hlsUrl: muxConfigured ? `https://stream.mux.com/${muxPlaybackId}.m3u8` : DEMO.muxHls,
+    poster: muxConfigured ? `https://image.mux.com/${muxPlaybackId}/thumbnail.jpg?time=2` : null,
   };
 
   // --- S3 + CloudFront ---
@@ -112,6 +114,10 @@ app.get("/api/config", (_req, res) => {
   const s3 = {
     configured: s3Configured,
     url: s3Configured ? joinUrl(s3Base, s3Key) : DEMO.mp4,
+    // Poster exists only for pipeline-encoded HLS uploads (it sits next to master.m3u8).
+    poster: s3Configured && /master\.m3u8$/.test(s3Key)
+      ? joinUrl(s3Base, s3Key.replace(/master\.m3u8$/, "poster.jpg"))
+      : null,
   };
 
   // --- R2 + self-managed HLS ---
@@ -123,6 +129,9 @@ app.get("/api/config", (_req, res) => {
     url: r2Configured
       ? joinUrl(r2Base, `${r2Prefix.replace(/\/+$/, "")}/master.m3u8`)
       : DEMO.hls,
+    poster: r2Configured
+      ? joinUrl(r2Base, `${r2Prefix.replace(/\/+$/, "")}/poster.jpg`)
+      : null,
   };
 
   // --- YouTube (benchmark) ---
