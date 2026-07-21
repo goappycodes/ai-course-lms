@@ -147,15 +147,24 @@ app.get("/api/config", (_req, res) => {
 
 // ------------------------------------------------------------- uploads -----
 
-if (!SERVERLESS) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-const storage = multer.diskStorage({
-  destination: UPLOADS_DIR,
-  filename: (_req, file, cb) => {
-    const safe = file.originalname.replace(/[^\w.\-]+/g, "_");
-    cb(null, `${Date.now().toString(36)}-${safe}`);
-  },
-});
-const upload = multer({ storage, limits: { fileSize: 6 * 1024 * 1024 * 1024 } });
+// multer.diskStorage() mkdirs its destination at construction time, which
+// crashes on Vercel's read-only filesystem — so build the middleware lazily,
+// only when a local upload actually arrives (localOnly 501s first on Vercel).
+let uploadMiddleware = null;
+function uploadSingle(req, res, next) {
+  if (!uploadMiddleware) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    const storage = multer.diskStorage({
+      destination: UPLOADS_DIR,
+      filename: (_req, file, cb) => {
+        const safe = file.originalname.replace(/[^\w.\-]+/g, "_");
+        cb(null, `${Date.now().toString(36)}-${safe}`);
+      },
+    });
+    uploadMiddleware = multer({ storage, limits: { fileSize: 6 * 1024 * 1024 * 1024 } }).single("video");
+  }
+  return uploadMiddleware(req, res, next);
+}
 
 // The pipeline needs ffmpeg, a writable disk, and minutes of runtime — none of
 // which serverless offers. Run `npm start` locally to upload/encode/publish.
@@ -168,7 +177,7 @@ function localOnly(_req, res, next) {
   next();
 }
 
-app.post("/api/upload", localOnly, upload.single("video"), (req, res) => {
+app.post("/api/upload", localOnly, uploadSingle, (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file received (field name: video)." });
   res.json({
     filename: req.file.filename,
