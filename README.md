@@ -12,10 +12,13 @@ across devices:
 | 4 | **R2 + own encoding** | You encode HLS with ffmpeg, R2 serves it | Storage only ($0.015/GB-mo) — **zero egress** |
 | 5 | **YouTube embed** | Free benchmark — the quality bar to compare against | Free (but no access control) |
 
-The HUD shows: startup time, resolution, rebuffer count/duration, buffer ahead,
-dropped frames, bytes downloaded, and (for HLS via hls.js) segments loaded,
-last/average measured segment download speed, bitrate, quality switches, and the
-ABR bandwidth estimate. A **live chart** plots buffer level and segment download
+The HUD leads with an **Overall score** (0–100, color-coded): 100 minus
+penalties for startup delay, freezes (weighted heaviest, as in standard QoE
+models), playing below the resolution the player could show, and excessive
+quality switching. Under it sit the five human stats: start delay, freezes,
+quality, data used, and download speed. An **Advanced stats** toggle reveals
+the technical set (buffer ahead, dropped frames, segments, bitrate, switches,
+bandwidth estimate). A **live chart** plots buffer level and segment download
 speed over the last 60 s, with rebuffer periods shaded red.
 
 In-player controls:

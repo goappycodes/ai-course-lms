@@ -149,6 +149,10 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
 }
 .hud .stat .label { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
 .hud .stat .value { font-size: 1.05rem; }
+.hud .stat.score .value { font-size: 1.35rem; font-weight: 600; }
+.value.score-good { color: var(--ok); }
+.value.score-mid { color: var(--warn); }
+.value.score-low { color: #e74c3c; }
 
 /* Desktop: compact stats column overlaid on the video's right edge.
    pointer-events:none keeps the video controls clickable underneath. */
@@ -181,6 +185,8 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
   }
   .hud .stat .label { font-size: 0.6rem; letter-spacing: 0.02em; white-space: nowrap; }
   .hud .stat .value { font-size: 0.72rem; white-space: nowrap; }
+  .hud .stat.score { padding-bottom: 4px; border-bottom: 1px solid rgba(42, 49, 64, 0.8); margin-bottom: 3px; }
+  .hud .stat.score .value { font-size: 0.95rem; font-weight: 600; }
 }
 
 .src-line {

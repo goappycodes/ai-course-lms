@@ -33,6 +33,7 @@ const els = {
   reloadBtn: document.getElementById("reloadBtn"),
   qualitySelect: document.getElementById("qualitySelect"),
   throttleSelect: document.getElementById("throttleSelect"),
+  advancedBtn: document.getElementById("advancedBtn"),
   officialBtn: document.getElementById("officialBtn"),
   chartWrap: document.getElementById("chartWrap"),
   chart: document.getElementById("chart"),
@@ -89,6 +90,7 @@ function teardown() {
   els.wrap.innerHTML = "";
   els.qualitySelect.hidden = true;
   els.throttleSelect.hidden = true;
+  els.advancedBtn.hidden = true;
   els.chartWrap.hidden = true;
 }
 
@@ -148,6 +150,13 @@ function loadUnified() {
 
   els.chartWrap.hidden = false;
   metrics = new Metrics(video, els.hud, chart);
+  els.advancedBtn.hidden = false;
+  els.advancedBtn.classList.remove("active");
+  els.advancedBtn.onclick = () => {
+    metrics.advanced = !metrics.advanced;
+    metrics.render();
+    els.advancedBtn.classList.toggle("active", metrics.advanced);
+  };
 
   const isHlsSrc = /\.m3u8($|\?)/.test(src);
   if (isHlsSrc && window.Hls && Hls.isSupported()) {
@@ -258,6 +267,8 @@ async function loadYouTube() {
 
   let bufferingAt = null;
   let startupMs = null;
+  let freezes = 0;
+  let lastState = null;
   ytPlayer = new YT.Player(mount, {
     videoId: cfg.videoId,
     width: "100%",
@@ -271,23 +282,40 @@ async function loadYouTube() {
         if (e.data === YT.PlayerState.PLAYING && startupMs === null && bufferingAt !== null) {
           startupMs = performance.now() - bufferingAt;
         }
+        // Mid-playback drops back into buffering read as freezes (seeks
+        // included — the iframe can't tell us the difference).
+        if (e.data === YT.PlayerState.BUFFERING && lastState === YT.PlayerState.PLAYING) {
+          freezes += 1;
+        }
+        lastState = e.data;
       },
     },
   });
 
   ytTimer = setInterval(() => {
     if (!ytPlayer?.getPlayerState) return;
-    const stats = {
-      "Startup time": startupMs !== null ? `${Math.round(startupMs)} ms` : "press play",
-      "State": YT_STATES[ytPlayer.getPlayerState()] ?? "—",
-      "Time": `${(ytPlayer.getCurrentTime?.() || 0).toFixed(0)} / ${(ytPlayer.getDuration?.() || 0).toFixed(0)} s`,
-      "Buffered": `${Math.round((ytPlayer.getVideoLoadedFraction?.() || 0) * 100)} %`,
-      "Quality": ytPlayer.getPlaybackQuality?.() || "—",
-      "Bytes / bandwidth": "hidden by iframe",
-    };
-    els.hud.innerHTML = Object.entries(stats)
-      .map(([label, value]) =>
-        `<div class="stat"><div class="label">${label}</div><div class="value">${value}</div></div>`)
+    let score = null;
+    if (startupMs !== null) {
+      score = Math.max(0, Math.round(100 - Math.min(25, (startupMs / 1000) * 8) - freezes * 8));
+    }
+    const rows = [
+      {
+        label: "Overall score",
+        value: score !== null ? `${score} · ${score >= 90 ? "Excellent" : score >= 75 ? "Good" : score >= 60 ? "Fair" : "Poor"}` : "press play",
+        cls: score !== null ? (score >= 75 ? "score-good" : score >= 55 ? "score-mid" : "score-low") : "",
+        score: true,
+      },
+      { label: "Start delay", value: startupMs !== null ? `${Math.round(startupMs)} ms` : "—" },
+      { label: "Freezes", value: String(freezes) },
+      { label: "State", value: YT_STATES[ytPlayer.getPlayerState()] ?? "—" },
+      { label: "Time", value: `${(ytPlayer.getCurrentTime?.() || 0).toFixed(0)} / ${(ytPlayer.getDuration?.() || 0).toFixed(0)} s` },
+      { label: "Buffered", value: `${Math.round((ytPlayer.getVideoLoadedFraction?.() || 0) * 100)} %` },
+      { label: "Data / bandwidth", value: "hidden by iframe" },
+    ];
+    els.hud.innerHTML = rows
+      .map((r) =>
+        `<div class="stat${r.score ? " score" : ""}"><div class="label">${r.label}</div>` +
+        `<div class="value${r.cls ? ` ${r.cls}` : ""}">${r.value}</div></div>`)
       .join("");
   }, 500);
 }

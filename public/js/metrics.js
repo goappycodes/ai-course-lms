@@ -10,6 +10,7 @@ export class Metrics {
     this.hud = hudEl;
     this.chart = chart;
     this.hls = null; // set via attachHls()
+    this.advanced = false; // show technical stats too
     this.reset();
 
     video.addEventListener("play", () => this._onPlay());
@@ -139,6 +140,36 @@ export class Metrics {
     return "n/a";
   }
 
+  // What resolution this player could reasonably be showing: the ladder's
+  // best rung, capped by the player's on-screen size.
+  _targetHeight() {
+    if (this.hls?.levels?.length) {
+      const maxLevel = Math.max(...this.hls.levels.map((l) => l.height));
+      const playerHeight = this.video.clientHeight || 0;
+      return Math.min(maxLevel, Math.max(playerHeight, 360));
+    }
+    return null;
+  }
+
+  // Single 0-100 viewer-experience score. Weights follow standard QoE
+  // findings: rebuffering hurts most, then startup delay, then picture
+  // quality below what the player could show, then excessive switching.
+  _score(stallMs) {
+    if (!this.started) return null;
+    let score = 100;
+    score -= Math.min(25, ((this.startupMs ?? 0) / 1000) * 8);
+    score -= Math.min(40, this.stallCount * 5 + (stallMs / 1000) * 4);
+    const target = this._targetHeight();
+    if (target && this.video.videoHeight) {
+      score -= (1 - Math.min(1, this.video.videoHeight / target)) * 25;
+    }
+    score -= Math.min(10, Math.max(0, this.levelSwitches - 2) * 2);
+    score = Math.max(0, Math.round(score));
+    const label =
+      score >= 90 ? "Excellent" : score >= 75 ? "Good" : score >= 60 ? "Fair" : score >= 40 ? "Poor" : "Bad";
+    return { value: score, label };
+  }
+
   _tick() {
     this.render();
     if (this.chart && (this.started || this._bufferedTotal() > 0)) {
@@ -155,44 +186,63 @@ export class Metrics {
     let stallMs = this.stallMs;
     if (this.stallStartedAt !== null) stallMs += performance.now() - this.stallStartedAt;
 
-    const stats = {
-      "Startup time":
-        this.startupMs !== null ? `${Math.round(this.startupMs)} ms`
-        : this.playRequestedAt !== null ? "loading…"
-        : "press play",
-      "Resolution": v.videoWidth ? `${v.videoWidth}×${v.videoHeight}` : "—",
-      "Rebuffers": `${this.stallCount} (${(stallMs / 1000).toFixed(1)} s)`,
-      "Buffer ahead": `${this._bufferAhead().toFixed(1)} s`,
-      "Dropped frames": this._dropped(),
-    };
-
+    const rows = [];
+    const s = this._score(stallMs);
+    rows.push({
+      label: "Overall score",
+      value: s
+        ? `${s.value} · ${s.label}`
+        : this.playRequestedAt !== null ? "measuring…" : "press play",
+      cls: s ? (s.value >= 75 ? "score-good" : s.value >= 55 ? "score-mid" : "score-low") : "",
+      score: true,
+    });
+    rows.push({
+      label: "Start delay",
+      value:
+        this.startupMs !== null
+          ? this.startupMs >= 1000
+            ? `${(this.startupMs / 1000).toFixed(1)} s`
+            : `${Math.round(this.startupMs)} ms`
+          : "—",
+    });
+    rows.push({ label: "Freezes", value: `${this.stallCount} (${(stallMs / 1000).toFixed(1)} s)` });
+    rows.push({ label: "Quality", value: v.videoHeight ? `${v.videoHeight}p` : "—" });
     const dl = this._downloadedBytes();
     if (dl) {
-      stats[dl.exact ? "Downloaded" : "Downloaded (est.)"] = `${(dl.bytes / 1e6).toFixed(1)} MB`;
+      rows.push({ label: dl.exact ? "Data used" : "Data used (est.)", value: `${(dl.bytes / 1e6).toFixed(1)} MB` });
+    }
+    if (this.hls && this.downloadMs) {
+      rows.push({
+        label: "Speed",
+        value: `${((this.bytesDownloaded * 8) / this.downloadMs / 1000).toFixed(1)} Mbps`,
+      });
     }
 
-    if (this.hls) {
-      stats["Segments loaded"] = String(this.segmentsLoaded);
-      stats["Last segment speed"] = this.lastSegMbps ? `${this.lastSegMbps.toFixed(1)} Mbps` : "—";
-      stats["Avg download speed"] = this.downloadMs
-        ? `${((this.bytesDownloaded * 8) / this.downloadMs / 1000).toFixed(1)} Mbps`
-        : "—";
-      const level = this.hls.levels?.[this.hls.currentLevel];
-      stats["Bitrate"] = level ? `${Math.round(level.bitrate / 1000)} kbps` : "auto";
-      stats["Quality switches"] = String(this.levelSwitches);
-      stats["ABR bandwidth est."] = this.hls.bandwidthEstimate
-        ? `${(this.hls.bandwidthEstimate / 1e6).toFixed(1)} Mbps`
-        : "—";
+    if (this.advanced) {
+      rows.push({ label: "Buffer ahead", value: `${this._bufferAhead().toFixed(1)} s` });
+      rows.push({ label: "Dropped frames", value: this._dropped() });
+      if (this.hls) {
+        const level = this.hls.levels?.[this.hls.currentLevel];
+        rows.push({ label: "Segments loaded", value: String(this.segmentsLoaded) });
+        rows.push({ label: "Last segment", value: this.lastSegMbps ? `${this.lastSegMbps.toFixed(1)} Mbps` : "—" });
+        rows.push({ label: "Bitrate", value: level ? `${Math.round(level.bitrate / 1000)} kbps` : "auto" });
+        rows.push({ label: "Quality switches", value: String(this.levelSwitches) });
+        rows.push({
+          label: "Bandwidth est.",
+          value: this.hls.bandwidthEstimate ? `${(this.hls.bandwidthEstimate / 1e6).toFixed(1)} Mbps` : "—",
+        });
+      }
     }
 
     if (v.error) {
-      stats["Error"] = v.error.message || `code ${v.error.code}`;
+      rows.push({ label: "Error", value: v.error.message || `code ${v.error.code}`, cls: "score-low" });
     }
 
-    this.hud.innerHTML = Object.entries(stats)
+    this.hud.innerHTML = rows
       .map(
-        ([label, value]) =>
-          `<div class="stat"><div class="label">${label}</div><div class="value">${value}</div></div>`
+        (r) =>
+          `<div class="stat${r.score ? " score" : ""}"><div class="label">${r.label}</div>` +
+          `<div class="value${r.cls ? ` ${r.cls}` : ""}">${r.value}</div></div>`
       )
       .join("");
   }
