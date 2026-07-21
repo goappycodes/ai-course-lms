@@ -204,7 +204,38 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
   border-radius: 12px;
   padding: 10px 14px 6px;
 }
-.chart-wrap canvas { width: 100%; display: block; }
+.chart-wrap canvas { width: 100%; height: 120px; display: block; }
+
+/* Desktop: slim translucent strip along the bottom of the video, clear of
+   the native control bar and of the stats column on the right. */
+@media (min-width: 900px) {
+  .chart-wrap {
+    position: absolute;
+    left: 10px;
+    right: 220px;
+    bottom: 48px;
+    margin: 0;
+    padding: 4px 10px;
+    background: rgba(14, 17, 22, 0.55);
+    border: 1px solid rgba(42, 49, 64, 0.6);
+    border-radius: 10px;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    pointer-events: none;
+    z-index: 3;
+  }
+  .chart-wrap canvas { height: 44px; }
+  .chart-legend {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    gap: 10px;
+    margin: 0;
+    font-size: 0.55rem;
+    opacity: 0.75;
+  }
+  .chart-legend .dot { width: 7px; height: 7px; margin-right: 3px; }
+}
 .chart-legend {
   display: flex;
   gap: 18px;

@@ -24,6 +24,8 @@ export class StripChart {
     // Match the backing store to CSS size for crisp lines.
     const cssWidth = c.clientWidth || 600;
     if (c.width !== cssWidth) c.width = cssWidth;
+    const cssHeight = c.clientHeight || 120;
+    if (c.height !== cssHeight) c.height = cssHeight;
     const w = c.width;
     const h = c.height;
     const ctx = c.getContext("2d");
@@ -80,11 +82,13 @@ export class StripChart {
     drawSeries((s) => s.buffer, maxBuffer, "#2ecc71", "rgba(46, 204, 113, 0.12)");
     drawSeries((s) => s.mbps, maxMbps, "#4f8ef7", null);
 
-    // Scale labels for each series' max.
+    // Scale labels for each series' max, side by side so they fit the
+    // slim overlay strip too.
     ctx.font = "10px system-ui, sans-serif";
     ctx.fillStyle = "#2ecc71";
-    ctx.fillText(`${maxBuffer.toFixed(0)} s`, 4, 12);
+    const bufLabel = `${maxBuffer.toFixed(0)} s`;
+    ctx.fillText(bufLabel, 4, 12);
     ctx.fillStyle = "#4f8ef7";
-    ctx.fillText(`${maxMbps.toFixed(0)} Mbps`, 4, 24);
+    ctx.fillText(`${maxMbps.toFixed(0)} Mbps`, 10 + ctx.measureText(bufLabel).width, 12);
   }
 }

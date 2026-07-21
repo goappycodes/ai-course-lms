@@ -18,6 +18,14 @@
     <div class="player-area">
       <div class="player-wrap" id="playerWrap"></div>
       <div class="hud" id="hud"></div>
+      <div class="chart-wrap" id="chartWrap" hidden>
+        <div class="chart-legend">
+          <span><i class="dot dot-buffer"></i>Buffer ahead (s)</span>
+          <span><i class="dot dot-net"></i>Download speed (Mbps)</span>
+          <span><i class="dot dot-stall"></i>Freeze</span>
+        </div>
+        <canvas id="chart" height="120"></canvas>
+      </div>
     </div>
 
     <div class="controls">
@@ -26,15 +34,6 @@
       <select id="throttleSelect" hidden title="Artificially limit segment download speed to simulate a slow connection"></select>
       <button id="advancedBtn" hidden title="Show the technical stats too">Advanced stats</button>
       <button id="officialBtn" hidden>Switch to official player</button>
-    </div>
-
-    <div class="chart-wrap" id="chartWrap" hidden>
-      <div class="chart-legend">
-        <span><i class="dot dot-buffer"></i>Buffer ahead (s)</span>
-        <span><i class="dot dot-net"></i>Segment download speed (Mbps)</span>
-        <span><i class="dot dot-stall"></i>Rebuffering</span>
-      </div>
-      <canvas id="chart" height="120"></canvas>
     </div>
 
     <p class="src-line" id="srcLine"></p>
