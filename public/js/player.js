@@ -44,7 +44,9 @@ let metrics = null;
 let hls = null;
 let ytPlayer = null;
 let ytTimer = null;
-let throttleBps = 0;
+// Default to simulating a slow-4G connection — the realistic worst case for
+// course viewers; pick "No throttle" in the dropdown for full-speed testing.
+let throttleBps = 3e6;
 const chart = new StripChart(els.chart);
 
 init();

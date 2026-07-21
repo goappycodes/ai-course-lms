@@ -18,11 +18,11 @@
     </header>
 
     <div class="grid" id="cards">
-      <a class="card" href="/player.html?p=stream" data-provider="stream">
+      <div class="card disabled">
         <h2>Cloudflare Stream</h2>
         <p>Fully managed: upload once, Stream encodes and serves HLS. Priced per minute stored + per minute delivered.</p>
-        <span class="badge" data-badge>checking…</span>
-      </a>
+        <span class="badge">coming soon</span>
+      </div>
       <a class="card" href="/player.html?p=mux" data-provider="mux">
         <h2>MUX</h2>
         <p>Fully managed: assets + playback IDs, best-in-class player and analytics. Priced per minute encoded/stored/streamed.</p>
@@ -36,11 +36,6 @@
       <a class="card" href="/player.html?p=r2" data-provider="r2">
         <h2>R2 + own encoding</h2>
         <p>You encode an HLS ladder with ffmpeg, upload to R2, serve from its public URL. Zero egress fees.</p>
-        <span class="badge" data-badge>checking…</span>
-      </a>
-      <a class="card" href="/player.html?p=youtube" data-provider="youtube">
-        <h2>YouTube embed <span class="muted">(benchmark)</span></h2>
-        <p>Free unlisted-video embed. Not viable for a paid course, but a useful quality/startup baseline to beat.</p>
         <span class="badge" data-badge>checking…</span>
       </a>
     </div>

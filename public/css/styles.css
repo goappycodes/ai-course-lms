@@ -45,6 +45,8 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
   transition: border-color 0.15s, transform 0.15s;
 }
 .card:hover { border-color: var(--accent); transform: translateY(-2px); }
+.card.disabled { opacity: 0.55; pointer-events: none; }
+.card.disabled:hover { border-color: var(--border); transform: none; }
 .card h2 { margin: 0 0 6px; font-size: 1.1rem; }
 .card p { margin: 0 0 12px; color: var(--muted); font-size: 0.9rem; }
 
