@@ -34,6 +34,7 @@ export class Metrics {
     // and reward preloading.
     this.playRequestedAt = null;
     this.startupMs = null;
+    this.bufferAtStart = null; // seconds buffered when the first frame appeared
     this.started = false;
     this.seeking = false;
     this.stallCount = 0;
@@ -87,6 +88,7 @@ export class Metrics {
       if (this.playRequestedAt !== null) {
         this.startupMs = performance.now() - this.playRequestedAt;
       }
+      this.bufferAtStart = this._bufferAhead();
     }
     if (this.stallStartedAt !== null) {
       this.stallMs += performance.now() - this.stallStartedAt;
@@ -172,11 +174,15 @@ export class Metrics {
 
   _tick() {
     this.render();
-    if (this.chart && (this.started || this._bufferedTotal() > 0)) {
+    // Sample from the moment play is pressed so the startup-buffering phase
+    // is visible on the chart, not just post-start playback.
+    const startupInProgress = !this.started && this.playRequestedAt !== null;
+    if (this.chart && (this.started || startupInProgress || this._bufferedTotal() > 0)) {
       this.chart.addSample({
         buffer: this._bufferAhead(),
         mbps: this.lastSegMbps,
         stalled: this.stallStartedAt !== null,
+        starting: startupInProgress,
       });
     }
   }
@@ -219,6 +225,10 @@ export class Metrics {
     }
 
     if (this.advanced) {
+      rows.push({
+        label: "Buffer at start",
+        value: this.bufferAtStart !== null ? `${this.bufferAtStart.toFixed(1)} s` : "—",
+      });
       rows.push({ label: "Buffer ahead", value: `${this._bufferAhead().toFixed(1)} s` });
       rows.push({ label: "Dropped frames", value: this._dropped() });
       if (this.hls) {

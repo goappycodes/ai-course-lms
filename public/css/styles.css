@@ -253,6 +253,7 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
 }
 .dot-buffer { background: #2ecc71; }
 .dot-net { background: #4f8ef7; }
+.dot-start { background: rgba(241, 196, 15, 0.7); }
 .dot-stall { background: rgba(231, 76, 60, 0.55); }
 
 /* ---- architecture / pros-cons info section ---- */

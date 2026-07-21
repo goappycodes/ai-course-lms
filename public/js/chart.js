@@ -40,10 +40,16 @@ export class StripChart {
     const mbpsValues = this.samples.map((s) => s.mbps).filter((v) => v != null);
     const maxMbps = Math.max(2, ...mbpsValues);
 
-    // Rebuffer shading behind everything else.
-    ctx.fillStyle = "rgba(231, 76, 60, 0.25)";
+    // Phase shading behind everything else: amber = startup buffering
+    // (press play -> first frame), red = mid-playback freeze.
     for (let i = 0; i < n; i++) {
-      if (this.samples[i].stalled) ctx.fillRect(x(i) - stepX / 2, 0, stepX, h);
+      if (this.samples[i].starting) {
+        ctx.fillStyle = "rgba(241, 196, 15, 0.22)";
+        ctx.fillRect(x(i) - stepX / 2, 0, stepX, h);
+      } else if (this.samples[i].stalled) {
+        ctx.fillStyle = "rgba(231, 76, 60, 0.25)";
+        ctx.fillRect(x(i) - stepX / 2, 0, stepX, h);
+      }
     }
 
     // Faint gridlines at 1/4, 1/2, 3/4.
