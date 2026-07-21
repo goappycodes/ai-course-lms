@@ -20,6 +20,14 @@ init();
 
 async function init() {
   const cfg = await fetch("/api/config").then((r) => r.json());
+  if (cfg.upload.serverless) {
+    els.dropText.innerHTML = "<b>Uploads don't run on the hosted site.</b>";
+    els.fileMeta.textContent =
+      "The encode/upload pipeline needs ffmpeg and your credentials — run `npm start` on your machine, upload there, then commit deploy-config.json to update this site.";
+    els.startBtn.disabled = true;
+    els.dropzone.style.pointerEvents = "none";
+    return;
+  }
   for (const label of els.checks.querySelectorAll("label")) {
     const p = label.dataset.p;
     const ready = cfg.upload[p];

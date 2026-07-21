@@ -51,6 +51,16 @@ HLS folder to S3 + R2, then points every player page at the new video
 (results persist in `data/current.json`, which overrides the `.env` video IDs).
 Providers without credentials in `.env` show as disabled.
 
+## Deploying the players (Vercel)
+
+The player pages + `/api/config` run fine on Vercel (`api/index.js` +
+`vercel.json` are already set up) — useful for testing on any device without
+being on your wifi. The **upload pipeline is local-only** (needs ffmpeg, a
+writable disk, and long runtimes): upload locally, then commit the refreshed
+`deploy-config.json` — a secret-free snapshot of playback IDs/URLs — and push;
+Vercel redeploys and the hosted players switch to the new video. No environment
+variables are needed on Vercel.
+
 ## Configure each option
 
 ### 1. Cloudflare Stream
