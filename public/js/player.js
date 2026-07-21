@@ -185,12 +185,6 @@ function loadUnified() {
         .catch(() => {}); // no CORS -> no size info; HUD just omits the row
     }
   }
-
-  // Autoplay muted (the only autoplay browsers allow); startup is still
-  // measured from this play attempt. If the browser blocks it anyway,
-  // the big-play overlay stays as the fallback.
-  video.muted = true;
-  video.play().catch(() => {});
 }
 
 function buildQualitySelect() {
@@ -240,7 +234,7 @@ async function loadYouTube() {
     videoId: cfg.videoId,
     width: "100%",
     height: "100%",
-    playerVars: { rel: 0, autoplay: 1, mute: 1 },
+    playerVars: { rel: 0 },
     events: {
       onStateChange: (e) => {
         if (e.data === YT.PlayerState.BUFFERING && startupMs === null && bufferingAt === null) {
