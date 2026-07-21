@@ -1,15 +1,15 @@
 {
-  "slug": "mruxg9no-akash-video",
-  "updatedAt": "2026-07-21T17:31:44.621Z",
+  "slug": "akash-video-v2",
+  "updatedAt": "2026-07-21T18:45:10.681Z",
   "mux": {
     "playbackId": "yCI5stmQ00oTaLp9Y4QC4u00YXQ5yM01HYD6ramA6PYH7M"
   },
   "s3": {
     "base": "https://dokvwuiqaonb5.cloudfront.net",
-    "key": "hls/mruxg9no-akash-video/master.m3u8"
+    "key": "hls/akash-video-v2/master.m3u8"
   },
   "r2": {
     "base": "https://pub-a708d079266540e7a1163fb49acad213.r2.dev",
-    "prefix": "hls/mruxg9no-akash-video"
+    "prefix": "hls/akash-video-v2"
   }
 }
