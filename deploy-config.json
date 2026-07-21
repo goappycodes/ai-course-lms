@@ -1,13 +1,15 @@
 {
-  "slug": "mruvfmcg-lms-test-clip",
-  "updatedAt": "2026-07-21T17:05:00.000Z",
-  "mux": { "playbackId": "YGXGLGrR01dihi9c3QSypwXlUZ4vPSj9qiIy1kGRa7pM" },
+  "slug": "mruxg9no-akash-video",
+  "updatedAt": "2026-07-21T17:31:44.621Z",
+  "mux": {
+    "playbackId": "yCI5stmQ00oTaLp9Y4QC4u00YXQ5yM01HYD6ramA6PYH7M"
+  },
   "s3": {
     "base": "https://dokvwuiqaonb5.cloudfront.net",
-    "key": "hls/mruvfmcg-lms-test-clip/master.m3u8"
+    "key": "hls/mruxg9no-akash-video/master.m3u8"
   },
   "r2": {
     "base": "https://pub-a708d079266540e7a1163fb49acad213.r2.dev",
-    "prefix": "hls/mruvfmcg-lms-test-clip"
+    "prefix": "hls/mruxg9no-akash-video"
   }
 }
