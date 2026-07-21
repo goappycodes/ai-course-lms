@@ -134,6 +134,8 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
 .controls button:hover, .controls select:hover { border-color: var(--accent); }
 .controls button.active { border-color: var(--accent); color: var(--accent); }
 
+.player-area { position: relative; }
+
 .hud {
   background: var(--panel);
   border: 1px solid var(--border);
@@ -143,9 +145,43 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 10px 20px;
   font-variant-numeric: tabular-nums;
+  margin-top: 12px;
 }
 .hud .stat .label { color: var(--muted); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
 .hud .stat .value { font-size: 1.05rem; }
+
+/* Desktop: compact stats column overlaid on the video's right edge.
+   pointer-events:none keeps the video controls clickable underneath. */
+@media (min-width: 900px) {
+  .hud {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    bottom: auto;
+    width: 200px;
+    max-height: calc(100% - 60px); /* keep clear of the control bar */
+    overflow: hidden;
+    margin: 0;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    background: rgba(14, 17, 22, 0.72);
+    border: 1px solid rgba(42, 49, 64, 0.8);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    pointer-events: none;
+    z-index: 3;
+  }
+  .hud .stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .hud .stat .label { font-size: 0.6rem; letter-spacing: 0.02em; white-space: nowrap; }
+  .hud .stat .value { font-size: 0.72rem; white-space: nowrap; }
+}
 
 .src-line {
   margin-top: 12px;

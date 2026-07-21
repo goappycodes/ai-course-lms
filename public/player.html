@@ -15,7 +15,10 @@
       <span class="badge" id="badge"></span>
     </div>
 
-    <div class="player-wrap" id="playerWrap"></div>
+    <div class="player-area">
+      <div class="player-wrap" id="playerWrap"></div>
+      <div class="hud" id="hud"></div>
+    </div>
 
     <div class="controls">
       <button id="reloadBtn" title="Reload the source and re-measure startup time">Reload &amp; re-measure</button>
@@ -23,8 +26,6 @@
       <select id="throttleSelect" hidden title="Artificially limit segment download speed to simulate a slow connection"></select>
       <button id="officialBtn" hidden>Switch to official player</button>
     </div>
-
-    <div class="hud" id="hud"></div>
 
     <div class="chart-wrap" id="chartWrap" hidden>
       <div class="chart-legend">
