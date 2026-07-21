@@ -3,11 +3,11 @@ import { StripChart } from "./chart.js";
 import { renderInfo } from "./info.js";
 
 const PROVIDERS = {
-  stream: { name: "Cloudflare Stream", official: "Cloudflare Stream player (iframe)" },
-  mux: { name: "MUX", official: "MUX player (mux-player)" },
-  s3: { name: "S3 + CloudFront", official: null },
-  r2: { name: "R2 + self-managed HLS", official: null },
-  youtube: { name: "YouTube embed (benchmark)", official: null, youtube: true },
+  stream: { name: "Cloudflare Stream" },
+  mux: { name: "MUX" },
+  s3: { name: "S3 + CloudFront" },
+  r2: { name: "R2 + self-managed HLS" },
+  youtube: { name: "YouTube embed (benchmark)", youtube: true },
 };
 
 const THROTTLE_OPTIONS = [
@@ -34,7 +34,6 @@ const els = {
   qualitySelect: document.getElementById("qualitySelect"),
   throttleSelect: document.getElementById("throttleSelect"),
   advancedBtn: document.getElementById("advancedBtn"),
-  officialBtn: document.getElementById("officialBtn"),
   chartWrap: document.getElementById("chartWrap"),
   chart: document.getElementById("chart"),
   info: document.getElementById("info"),
@@ -45,7 +44,6 @@ let metrics = null;
 let hls = null;
 let ytPlayer = null;
 let ytTimer = null;
-let mode = "unified"; // "unified" (our hls.js/native player + HUD) or "official"
 let throttleBps = 0;
 const chart = new StripChart(els.chart);
 
@@ -72,10 +70,6 @@ async function init() {
     .join("");
   els.throttleSelect.onchange = () => { throttleBps = Number(els.throttleSelect.value); };
 
-  if (provider.official) {
-    els.officialBtn.hidden = false;
-    els.officialBtn.addEventListener("click", toggleMode);
-  }
   els.reloadBtn.addEventListener("click", () => loadUnified());
 
   if (provider.youtube) loadYouTube();
@@ -120,8 +114,6 @@ function makeThrottledLoader() {
 // so the HUD numbers are directly comparable across the options. ----
 function loadUnified() {
   teardown();
-  mode = "unified";
-  els.officialBtn.textContent = "Switch to official player";
   els.hud.style.display = "";
   els.reloadBtn.disabled = false;
 
@@ -202,39 +194,6 @@ function buildQualitySelect() {
       .map((l, i) => `<option value="${i}">${l.height}p @ ${Math.round(l.bitrate / 1000)} kbps</option>`)
       .join("");
   sel.onchange = () => { hls.currentLevel = Number(sel.value); };
-}
-
-// ---- Official managed players (Stream iframe / mux-player), for comparing
-// the vendor player UX. The HUD can't reach inside these, so it's hidden. ----
-function toggleMode() {
-  if (mode === "unified") loadOfficial();
-  else loadUnified();
-}
-
-async function loadOfficial() {
-  teardown();
-  mode = "official";
-  els.officialBtn.textContent = "Switch to unified player (with metrics)";
-  els.hud.style.display = "none";
-  els.reloadBtn.disabled = true;
-
-  if (providerId === "stream") {
-    const iframe = document.createElement("iframe");
-    iframe.src = cfg.iframeUrl;
-    iframe.allow = "accelerometer; gyroscope; autoplay; encrypted-media; picture-in-picture;";
-    iframe.allowFullscreen = true;
-    els.wrap.appendChild(iframe);
-    els.srcLine.textContent = `Source: ${cfg.iframeUrl}`;
-  } else if (providerId === "mux") {
-    if (!customElements.get("mux-player")) {
-      await import("https://cdn.jsdelivr.net/npm/@mux/mux-player@2/dist/mux-player.mjs");
-    }
-    const mp = document.createElement("mux-player");
-    mp.setAttribute("playback-id", cfg.playbackId);
-    mp.setAttribute("stream-type", "on-demand");
-    els.wrap.appendChild(mp);
-    els.srcLine.textContent = `Source: mux-player playback-id=${cfg.playbackId}`;
-  }
 }
 
 // ---- YouTube benchmark: iframe API player + the coarse stats it exposes.

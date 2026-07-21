@@ -28,9 +28,8 @@ In-player controls:
   progressive MP4 or YouTube, use browser DevTools throttling instead.
 - **Reload & re-measure** — fresh join-time measurement.
 
-Stream and MUX pages also have a toggle to their **official players** to compare
-vendor player UX, and every page ends with an architecture diagram
-(who manages which stage), pros/cons, and a cost reality check.
+Every page ends with an architecture diagram (who manages which stage),
+pros/cons, and a cost reality check.
 
 ## Run it
 
@@ -128,8 +127,6 @@ chosen option should get close to on startup time and quality.
   compatibility test, especially for the self-encoded R2 ladder.
 - **Seek behavior** — jump around the timeline; HLS seeks by segment (4 s here),
   progressive MP4 depends on byte-range support.
-- Official Stream/MUX players (toggle button) for their UX: quality menu,
-  playback speed, captions, etc.
 
 ## Notes for the real LMS build
 
