@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Side-by-side — LMS Player PoC</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+</head>
+<body>
+  <main class="container wide">
+    <div class="topbar">
+      <a href="/">&larr; All players</a>
+      <h1>All providers, side by side</h1>
+    </div>
+
+    <p class="muted small">
+      Same video, same conditions, three delivery pipelines. Hit <b>Play all</b> and watch the
+      scores diverge — the throttle applies to every player equally.
+    </p>
+
+    <div class="controls">
+      <button id="playAllBtn">▶ Play all (muted)</button>
+      <button id="reloadAllBtn">Reload all &amp; re-measure</button>
+      <select id="throttleSelect" title="Applies to all three players"></select>
+    </div>
+
+    <div class="cmp-grid" id="grid"></div>
+  </main>
+
+  <script type="module" src="/js/compare.js"></script>
+</body>
+</html>
