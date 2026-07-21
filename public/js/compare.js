@@ -122,5 +122,10 @@ function buildCell(provider, cfg) {
     video.src = src;
   }
 
+  // Autoplay muted so all three race from page load; the overlay stays
+  // as a fallback if the browser blocks it.
+  video.muted = true;
+  video.play().catch(() => {});
+
   cells.push({ video, metrics, hls });
 }
