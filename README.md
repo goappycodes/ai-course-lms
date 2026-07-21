@@ -42,6 +42,15 @@ on phones/tablets on the same wifi to test other devices.
 **Every player works immediately with a public demo video.** Cards show
 `demo` until you configure the real source in `.env` (copy `.env.example` → `.env`).
 
+## Upload interface
+
+Open **/upload.html** (linked from the home page): drop one lesson MP4, tick
+the providers you want, and the server encodes an HLS ladder with ffmpeg,
+pushes the file to Cloudflare Stream + MUX (they encode themselves) and the
+HLS folder to S3 + R2, then points every player page at the new video
+(results persist in `data/current.json`, which overrides the `.env` video IDs).
+Providers without credentials in `.env` show as disabled.
+
 ## Configure each option
 
 ### 1. Cloudflare Stream
@@ -62,19 +71,19 @@ on phones/tablets on the same wifi to test other devices.
 
 ### 3. S3 + CloudFront
 
-1. Create a **private** S3 bucket (e.g. `ai-lms-videos`, region `ap-south-1`).
-2. Create a **CloudFront distribution** with the bucket as origin:
-   - Origin access: **Origin access control (OAC)** → let CloudFront update the bucket policy.
-   - Cache policy: `CachingOptimized`. Response headers policy: `SimpleCORS` (needed only for HLS).
-3. IAM user with `s3:PutObject` on the bucket; fill `AWS_ACCESS_KEY_ID`,
-   `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, `S3_BUCKET`, `CLOUDFRONT_URL` in `.env`.
-4. Upload an MP4: `node scripts/upload-s3.mjs lesson1.mp4 videos/lesson1.mp4`
-   → sets `S3_VIDEO_KEY=videos/lesson1.mp4`.
-   Or upload an HLS folder (see option 4 encoding): `node scripts/upload-s3.mjs ./out/lesson1 hls/lesson1`.
+1. Put `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION` in `.env`
+   (keys need S3 + CloudFront create permissions for the setup script).
+2. Run `npm run setup:aws` — creates a private bucket, an Origin Access
+   Control, and a CloudFront distribution (CachingOptimized + SimpleCORS,
+   PriceClass_200), locks the bucket to CloudFront-only reads, and writes
+   `S3_BUCKET` / `CLOUDFRONT_URL` back into `.env`. Distribution takes
+   ~5–10 min to deploy.
+3. Upload via the upload interface, or manually:
+   `node scripts/upload-s3.mjs ./out/lesson1 hls/lesson1`.
 
 > A single progressive MP4 is the classic cheap setup, but it can't adapt quality
-> to the viewer's connection. For a fair fight against the others, encode HLS
-> (next section) and upload that folder instead.
+> to the viewer's connection. For a fair fight against the others, the pipeline
+> uploads the same HLS ladder it builds for R2.
 
 ### 4. R2 + self-managed HLS (zero egress)
 

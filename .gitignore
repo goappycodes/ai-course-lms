@@ -1,5 +1,7 @@
 node_modules/
 .env
 out/
+uploads/
+data/
 *.mp4
 *.log

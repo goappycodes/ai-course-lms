@@ -1,10 +1,8 @@
-// Upload a video to Cloudflare Stream (basic upload, files up to 200 MB).
+// Upload a video to Cloudflare Stream via tus resumable upload (any size).
 // Usage: node scripts/upload-stream.mjs <file.mp4>
-// For larger files, upload via the Cloudflare dashboard (Stream -> Upload)
-// and copy the video UID into .env instead.
 import "dotenv/config";
 import fs from "node:fs";
-import path from "node:path";
+import { streamTusUpload, streamGetPlayback } from "../lib/providers.mjs";
 
 const { CF_ACCOUNT_ID, CF_STREAM_API_TOKEN } = process.env;
 if (!CF_ACCOUNT_ID || !CF_STREAM_API_TOKEN) {
@@ -19,41 +17,25 @@ if (!file || !fs.existsSync(file)) {
 }
 
 const size = fs.statSync(file).size;
-if (size > 200 * 1024 * 1024) {
-  console.error(
-    `File is ${(size / 1e6).toFixed(0)} MB — the basic upload API caps at 200 MB.\n` +
-    "Upload it via the Cloudflare dashboard (Stream -> Upload) and set CF_STREAM_VIDEO_UID manually."
-  );
-  process.exit(1);
-}
-
 console.log(`Uploading ${file} (${(size / 1e6).toFixed(1)} MB) to Cloudflare Stream…`);
 
-const form = new FormData();
-form.append("file", new Blob([fs.readFileSync(file)]), path.basename(file));
-
-const res = await fetch(
-  `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/stream`,
+const uid = await streamTusUpload(
+  file,
+  { accountId: CF_ACCOUNT_ID, apiToken: CF_STREAM_API_TOKEN },
   {
-    method: "POST",
-    headers: { Authorization: `Bearer ${CF_STREAM_API_TOKEN}` },
-    body: form,
+    onLog: (msg) => console.log(msg),
+    onProgress: (f) => process.stdout.write(`\r  upload: ${(f * 100).toFixed(0)}%   `),
   }
 );
-const json = await res.json();
-if (!json.success) {
-  console.error("Upload failed:", JSON.stringify(json.errors, null, 2));
-  process.exit(1);
-}
+console.log("\nUpload complete. Waiting for Stream to encode…");
 
-const video = json.result;
-console.log("\nUpload accepted. Stream is now encoding it (usually ready in ~1x video length or less).");
-console.log(`Video UID: ${video.uid}`);
+const { customerCode, hls, readyToStream } = await streamGetPlayback(
+  CF_ACCOUNT_ID, CF_STREAM_API_TOKEN, uid,
+  { onLog: (msg) => console.log(`  ${msg}`) }
+);
 
-// The HLS playback URL embeds the customer code: customer-XXXX.cloudflarestream.com
-const hls = video.playback?.hls || "";
-const match = hls.match(/customer-([a-z0-9]+)\.cloudflarestream\.com/);
-console.log("\nSet in .env:");
-console.log(`  CF_STREAM_VIDEO_UID=${video.uid}`);
-if (match) console.log(`  CF_STREAM_CUSTOMER_CODE=${match[1]}`);
+console.log(`\n${readyToStream ? "Ready to stream." : "Still encoding (playback URL is already valid)."}`);
+console.log("Set in .env:");
+console.log(`  CF_STREAM_VIDEO_UID=${uid}`);
+if (customerCode) console.log(`  CF_STREAM_CUSTOMER_CODE=${customerCode}`);
 if (hls) console.log(`\nHLS URL: ${hls}`);

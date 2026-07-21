@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Upload course video — LMS PoC</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <div class="topbar">
+      <a href="/">&larr; All players</a>
+      <h1>Upload a course video</h1>
+    </div>
+
+    <p class="muted">
+      Drop one lesson MP4 here (a 20-minute file is fine). It gets encoded into an
+      adaptive HLS ladder with ffmpeg, pushed to every provider you tick, and the
+      player pages switch to it automatically. Keep this tab and the server open —
+      a 20-minute video takes a while to encode and upload.
+    </p>
+
+    <div class="dropzone" id="dropzone">
+      <input type="file" id="fileInput" accept="video/mp4,video/quicktime,video/*" hidden />
+      <p id="dropText"><b>Drop an MP4 here</b> or click to choose a file</p>
+      <p class="muted small" id="fileMeta"></p>
+    </div>
+
+    <h2 class="section-h">Push to</h2>
+    <div class="provider-checks" id="providerChecks">
+      <label data-p="stream"><input type="checkbox" value="stream" /> Cloudflare Stream <span class="badge" data-badge></span></label>
+      <label data-p="mux"><input type="checkbox" value="mux" /> MUX <span class="badge" data-badge></span></label>
+      <label data-p="s3"><input type="checkbox" value="s3" /> S3 + CloudFront <span class="badge" data-badge></span></label>
+      <label data-p="r2"><input type="checkbox" value="r2" /> R2 (own encoding) <span class="badge" data-badge></span></label>
+    </div>
+    <p class="muted small" id="ffmpegNote" hidden>
+      ffmpeg was not found on the server — the R2/S3 encode step will fail until it's installed.
+    </p>
+
+    <div class="controls">
+      <button id="startBtn" disabled>Upload &amp; process</button>
+      <span class="muted small" id="uploadProgress"></span>
+    </div>
+
+    <section id="jobSection" hidden>
+      <h2 class="section-h">Pipeline</h2>
+      <ol class="steps" id="steps"></ol>
+      <details class="logbox">
+        <summary>Logs</summary>
+        <pre id="logs"></pre>
+      </details>
+      <div id="doneLinks" class="controls" hidden>
+        <a class="btn-link" href="/player.html?p=stream">Stream player</a>
+        <a class="btn-link" href="/player.html?p=mux">MUX player</a>
+        <a class="btn-link" href="/player.html?p=s3">S3 player</a>
+        <a class="btn-link" href="/player.html?p=r2">R2 player</a>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/js/upload.js"></script>
+</body>
+</html>

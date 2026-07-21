@@ -201,3 +201,81 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
   font-size: 0.9rem;
 }
 .cost-line b { color: var(--accent); }
+
+/* ---- upload page ---- */
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.dropzone:hover, .dropzone.dragging { border-color: var(--accent); background: var(--panel-2); }
+.dropzone p { margin: 4px 0; }
+
+.section-h { font-size: 1rem; margin: 22px 0 10px; }
+
+.provider-checks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+}
+.provider-checks label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+.provider-checks label:has(input:disabled) { opacity: 0.55; cursor: not-allowed; }
+.provider-checks .badge { margin-left: auto; }
+
+.steps { list-style: none; padding: 0; margin: 0; }
+.step {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  font-size: 0.92rem;
+}
+.step .icon { width: 1em; }
+.step .detail { margin-left: auto; color: var(--muted); font-size: 0.8rem; text-align: right; }
+.step.running { border-color: var(--accent); }
+.step.running .icon { color: var(--accent); }
+.step.done .icon { color: var(--ok); }
+.step.error { border-color: #e74c3c; }
+.step.error .icon { color: #e74c3c; }
+
+.logbox { margin-top: 10px; }
+.logbox summary { cursor: pointer; color: var(--muted); font-size: 0.85rem; }
+.logbox pre {
+  background: #0a0d12;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 0.75rem;
+  max-height: 260px;
+  overflow: auto;
+  white-space: pre-wrap;
+}
+
+.btn-link {
+  background: var(--panel-2);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+.btn-link:hover { border-color: var(--accent); }

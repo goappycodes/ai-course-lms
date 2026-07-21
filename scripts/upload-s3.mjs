@@ -3,13 +3,12 @@
 //   e.g. node scripts/upload-s3.mjs ./lesson1.mp4 videos/lesson1.mp4
 //        node scripts/upload-s3.mjs ./out/lesson1 hls/lesson1
 import "dotenv/config";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import fs from "node:fs";
-import path from "node:path";
+import { makeS3Client, putFile, uploadDir } from "../lib/providers.mjs";
 
 const { AWS_REGION, S3_BUCKET, CLOUDFRONT_URL } = process.env;
 if (!S3_BUCKET || !AWS_REGION) {
-  console.error("Missing AWS_REGION / S3_BUCKET in .env (see .env.example). AWS credentials come from AWS_ACCESS_KEY_ID/AWS_SECRET_ACCESS_KEY.");
+  console.error("Missing AWS_REGION / S3_BUCKET in .env (see .env.example).");
   process.exit(1);
 }
 
@@ -19,49 +18,21 @@ if (!target || !key) {
   process.exit(1);
 }
 
-const CONTENT_TYPES = {
-  ".m3u8": "application/vnd.apple.mpegurl",
-  ".ts": "video/mp2t",
-  ".mp4": "video/mp4",
-  ".m4s": "video/iso.segment",
-  ".webm": "video/webm",
-  ".jpg": "image/jpeg",
-  ".vtt": "text/vtt",
-};
-
-const s3 = new S3Client({ region: AWS_REGION });
-
-async function put(file, s3Key) {
-  const ext = path.extname(file).toLowerCase();
-  await s3.send(new PutObjectCommand({
-    Bucket: S3_BUCKET,
-    Key: s3Key,
-    Body: fs.createReadStream(file),
-    ContentLength: fs.statSync(file).size,
-    ContentType: CONTENT_TYPES[ext] || "application/octet-stream",
-    CacheControl: ext === ".m3u8" ? "public, max-age=60" : "public, max-age=31536000, immutable",
-  }));
-  console.log(`  uploaded s3://${S3_BUCKET}/${s3Key}`);
-}
-
-function* walk(d) {
-  for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
-    const full = path.join(d, entry.name);
-    if (entry.isDirectory()) yield* walk(full);
-    else yield full;
-  }
-}
-
-const stat = fs.statSync(target);
+const s3 = makeS3Client(process.env);
 let playbackKey = key;
-if (stat.isDirectory()) {
-  for (const file of walk(target)) {
-    const rel = path.relative(target, file).split(path.sep).join("/");
-    await put(file, `${key.replace(/\/+$/, "")}/${rel}`);
-  }
+
+if (fs.statSync(target).isDirectory()) {
+  console.log(`Uploading folder to s3://${S3_BUCKET}/${key} …`);
+  const count = await uploadDir(s3, S3_BUCKET, target, key, {
+    onProgress: (done, total) => {
+      if (done % 25 === 0 || done === total) console.log(`  ${done}/${total}`);
+    },
+  });
+  console.log(`Uploaded ${count} files.`);
   playbackKey = `${key.replace(/\/+$/, "")}/master.m3u8`;
 } else {
-  await put(target, key);
+  await putFile(s3, S3_BUCKET, key, target);
+  console.log(`Uploaded s3://${S3_BUCKET}/${key}`);
 }
 
 console.log("\nUpload complete.");
@@ -69,5 +40,5 @@ console.log(`Set in .env:  S3_VIDEO_KEY=${playbackKey}`);
 if (CLOUDFRONT_URL) {
   console.log(`Playback URL: ${CLOUDFRONT_URL.replace(/\/+$/, "")}/${playbackKey}`);
 } else {
-  console.log("Also set CLOUDFRONT_URL once your CloudFront distribution is created (see README).");
+  console.log("Also set CLOUDFRONT_URL once your CloudFront distribution exists (npm run setup:aws creates it).");
 }
